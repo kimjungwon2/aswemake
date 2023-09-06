@@ -45,4 +45,8 @@ public class Product extends BaseEntity {
         this.type = type;
         this.price = price;
     }
+
+
+
+
 }

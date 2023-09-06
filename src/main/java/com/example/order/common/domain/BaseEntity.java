@@ -1,4 +1,4 @@
-package com.example.order.common;
+package com.example.order.common.domain;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;

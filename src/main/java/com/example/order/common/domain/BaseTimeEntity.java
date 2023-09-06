@@ -1,4 +1,4 @@
-package com.example.order.common;
+package com.example.order.common.domain;
 
 import java.time.LocalDateTime;
 import javax.persistence.Column;

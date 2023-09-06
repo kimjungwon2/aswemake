@@ -2,7 +2,6 @@ package com.example.order.domain.member;
 
 import com.example.order.common.domain.BaseTimeEntity;
 import com.example.order.domain.order.Order;
-import com.sun.istack.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -17,10 +16,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseTimeEntity {
 
     @Id

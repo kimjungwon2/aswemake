@@ -18,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,9 @@ public class Order extends BaseEntity {
 
     @OneToOne(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
     private Delivery delivery;
+
+    @NotNull
+    private Integer totalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

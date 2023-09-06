@@ -1,5 +1,6 @@
 package com.example.order.domain;
 
+import com.example.order.common.domain.BaseEntity;
 import com.example.order.common.domain.BaseTimeEntity;
 import com.example.order.domain.order.Order;
 import com.example.order.domain.product.Product;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderProduct extends BaseTimeEntity {
+public class OrderProduct extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

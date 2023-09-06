@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Email;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public class Member extends BaseTimeEntity {
     private List<Order> orders = new ArrayList<>();
 
     @Column(unique = true, nullable = false)
-    @NotNull
+    @Email
     private String email;
 
     private String password;
@@ -41,6 +42,7 @@ public class Member extends BaseTimeEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private MemberAuthority memberAuthority;
 
     @Builder

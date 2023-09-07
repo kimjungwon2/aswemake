@@ -331,12 +331,104 @@ class ProductServiceTest {
         ProductResponse productResponse = productService.changePrice(productId, request);
 
       //then
-        Product foundedProduct = productRepository.findByProductNumber("00001")
-                .orElseThrow();
-
-
-        assertThat(foundedProduct)
+        assertThat(productResponse)
                 .extracting("productNumber","name","type","price")
                 .contains("00001", "신라면", ProductType.NOODLE, 1000);
     }
+
+    @DisplayName("일반 유저가 상품을 삭제하면 Forbidden 예외가 터진다.")
+    @Test
+    void 일반유저_상품삭제(){
+      //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        productRepository.save(product);
+
+        Long productId = productRepository.findByProductNumber(product.getProductNumber())
+                .orElseThrow().getId();
+
+        String email = memberRepository.findByEmail(member.getEmail())
+                .orElseThrow().getEmail();
+
+      //when //then
+        assertThatThrownBy(() -> productService.deleteProduct(productId, email))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessage("MART 권한이 아닙니다.");
+    }
+
+    @DisplayName("상품을 삭제한다.")
+    @Test
+    void 상품삭제(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00003")
+                .name("감자깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        Long productId = productRepository.findByProductNumber("00002")
+                .orElseThrow().getId();
+
+        String email = memberRepository.findByEmail(member.getEmail())
+                .orElseThrow().getEmail();
+
+        //when
+        productService.deleteProduct(productId, email);
+
+        Boolean isNullProduct = productRepository.findByProductNumber("00002")
+                .isEmpty();
+        Product foundedProduct1 = productRepository.findByProductNumber("00001")
+                .orElseThrow();
+        Product foundedProduct2 = productRepository.findByProductNumber("00003")
+                .orElseThrow();
+
+        //then
+        assertThat(isNullProduct).isEqualTo(true);
+        assertThat(foundedProduct1)
+                .extracting("productNumber","name","type","price")
+                .contains("00001", "신라면", ProductType.NOODLE, 700);
+        assertThat(foundedProduct2)
+                .extracting("productNumber","name","type","price")
+                .contains("00003", "감자깡", ProductType.SNACK, 1200);
+    }
+
+
 }

@@ -1,7 +1,6 @@
 package com.example.order.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.order.domain.member.Member;
 import com.example.order.domain.member.MemberAuthority;

@@ -12,7 +12,11 @@ import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.repository.MemberRepository;
 import com.example.order.repository.ProductHistoryRepository;
 import com.example.order.repository.ProductRepository;
+import com.example.order.service.product.response.ProductHistoryResponse;
 import com.example.order.service.product.response.ProductResponse;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,7 +95,14 @@ public class ProductService {
 
         ProductHistory productHistory = toHistoryEntityByDelete(product);
         productHistoryRepository.save(productHistory);
+    }
 
+    public List<ProductHistoryResponse> getHistoryBasedOnTime(LocalDateTime createdDate){
+        List<ProductHistory> productHistories = productHistoryRepository.findByCreatedDate(createdDate);
+
+        return productHistories.stream()
+                .map(ProductHistoryResponse::of)
+                .collect(Collectors.toList());
     }
 
 

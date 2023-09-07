@@ -41,7 +41,7 @@ public class OrderResponse {
                 .member(order.getMember())
                 .deliveryResponse(DeliveryResponse.of(order.getDelivery()))
                 .orderProduct(
-                        order.getOrderProduct().stream()
+                        order.getOrderProducts().stream()
                         .map(orderProduct-> OrderProductResponse.of(orderProduct))
                         .collect(Collectors.toList())
                 )

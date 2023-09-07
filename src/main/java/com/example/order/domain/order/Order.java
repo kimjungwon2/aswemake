@@ -19,7 +19,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,14 +39,13 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "order")
-    private List<OrderProduct> orderProduct = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
+    private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
     @JoinColumn(name="delivery_id")
     private Delivery delivery;
 
-    @NotNull
     private Integer totalPrice;
 
     @Enumerated(EnumType.STRING)
@@ -57,14 +55,14 @@ public class Order extends BaseEntity {
     public Order(
             Long id,
             Member member,
-            List<OrderProduct> orderProduct,
+            List<OrderProduct> orderProducts,
             Delivery delivery,
             Integer totalPrice,
             OrderStatus status
     ) {
         this.id = id;
         this.member = member;
-        this.orderProduct = orderProduct;
+        this.orderProducts = orderProducts;
         this.delivery = delivery;
         this.totalPrice = totalPrice;
         this.status = status;
@@ -82,7 +80,24 @@ public class Order extends BaseEntity {
     }
 
     public void addOrderProduct(OrderProduct orderProduct){
-        this.orderProduct.add(orderProduct);
+        orderProducts.add(orderProduct);
         orderProduct.setOrder(this);
     }
+
+    public static Order createOrder(
+            Order order,
+            Member member,
+            Delivery delivery,
+            List<OrderProduct> orderProducts
+    ){
+        order.setMember(member);
+        order.setDelivery(delivery);
+
+        for(OrderProduct orderProduct : orderProducts){
+            order.addOrderProduct(orderProduct);
+        }
+
+        return order;
+    }
+
 }

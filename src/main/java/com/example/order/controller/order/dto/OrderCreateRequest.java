@@ -48,7 +48,7 @@ public class OrderCreateRequest {
         this.products = products;
     }
 
-    public Order toEntity(int totalPrice){
+    public Order toEntity(Integer totalPrice){
         return Order.builder()
                 .totalPrice(totalPrice)
                 .status(OrderStatus.ORDER)

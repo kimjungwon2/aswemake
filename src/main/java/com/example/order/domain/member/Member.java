@@ -28,7 +28,6 @@ public class Member extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @OneToMany(mappedBy="member")
     private List<Order> orders = new ArrayList<>();
 

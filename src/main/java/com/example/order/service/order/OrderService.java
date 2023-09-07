@@ -14,6 +14,7 @@ import com.example.order.repository.OrderProductRepository;
 import com.example.order.repository.OrderRepository;
 import com.example.order.repository.ProductRepository;
 import com.example.order.service.order.response.OrderResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -34,41 +35,36 @@ public class OrderService {
     private static final Integer DELIVERY_PRICE = 2500;
 
     @Transactional
-    public OrderResponse createOrder(OrderCreateRequest request) {
+    public Long createOrder(OrderCreateRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
                 .orElseThrow(()->new IllegalStateException("해당 이메일의 멤버가 존재하지 않습니다."));
 
         Delivery delivery = saveDelivery(request);
 
-        int totalProductPrice = getTotalOrderProductPrice(request);
+        List<OrderProduct> orderProducts = new ArrayList<>();
+        int totalProductPrice = getTotalOrderProductPrice(request, orderProducts);
 
-        Order order = saveOrder(request, member, delivery, totalProductPrice);
+        Order order = saveOrder(request, member, delivery, orderProducts, totalProductPrice);
 
-        return OrderResponse.of(order);
+        return order.getId();
     }
 
     private Order saveOrder(
             OrderCreateRequest request,
             Member member,
             Delivery delivery,
+            List<OrderProduct> orderProducts,
             int totalProductPrice
     ) {
         Order order = request.toEntity(totalProductPrice);
+        Order.createOrder(order, member, delivery, orderProducts);
+
         orderRepository.save(order);
-
-        order.setDelivery(delivery);
-        order.setMember(member);
-
-        List<OrderProduct> orderProducts = orderProductRepository.findByOrder(order);
-
-        for(OrderProduct orderProduct : orderProducts){
-            order.addOrderProduct(orderProduct);
-        }
-
         return order;
     }
 
-    private int getTotalOrderProductPrice(OrderCreateRequest request) {
+
+    private int getTotalOrderProductPrice(OrderCreateRequest request, List<OrderProduct> orderProducts) {
         int totalProductPrice = 0;
 
         HashMap<String, Integer> products = request.getProducts();
@@ -81,7 +77,7 @@ public class OrderService {
             int count = products.get(productName);
             int orderPrice = count * product.getPrice();
 
-            saveOrderProduct(product, count, orderPrice);
+            orderProducts.add(saveOrderProduct(product, count, orderPrice));
 
             totalProductPrice += orderPrice;
         }
@@ -89,14 +85,18 @@ public class OrderService {
         return totalProductPrice;
     }
 
-    private void saveOrderProduct(Product product, int count, int orderPrice) {
+    private OrderProduct saveOrderProduct(Product product, int count, int orderPrice) {
         OrderProduct orderProduct = OrderProduct.builder()
                 .product(product)
                 .count(count)
                 .orderPrice(orderPrice)
                 .build();
 
-        orderProductRepository.save(orderProduct);
+        OrderProduct savedOrderProduct= orderProductRepository.save(orderProduct);
+        OrderProduct foundedOrderProduct = orderProductRepository.findById(1L)
+                .orElseThrow(()->new IllegalStateException("orderProduct 데이터가 없습니다."));
+
+        return savedOrderProduct;
     }
 
     private Delivery saveDelivery(OrderCreateRequest request) {

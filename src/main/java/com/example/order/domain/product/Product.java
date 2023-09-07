@@ -52,4 +52,7 @@ public class Product extends BaseEntity {
         this.price = product.getPrice();
     }
 
+    public void changePrice(Product product) {
+        this.price = product.getPrice();
+    }
 }

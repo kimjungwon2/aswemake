@@ -1,6 +1,8 @@
 package com.example.order.controller.product.dto;
 
 import com.example.order.domain.product.Product;
+import com.example.order.domain.product.ProductHistory;
+import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.domain.product.ProductType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -45,6 +47,16 @@ public class ProductCreateRequest {
                 .type(productType)
                 .name(productName)
                 .price(price)
+                .build();
+    }
+
+    public ProductHistory toHistoryEntity(Product product){
+        return ProductHistory.builder()
+                .productNumber(product.getProductNumber())
+                .historyType(ProductHistoryType.CREATE)
+                .type(product.getType())
+                .name(product.getName())
+                .price(product.getPrice())
                 .build();
     }
 }

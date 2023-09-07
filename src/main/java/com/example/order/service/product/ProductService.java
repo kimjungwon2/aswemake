@@ -7,7 +7,10 @@ import com.example.order.controller.product.dto.ProductUpdateRequest;
 import com.example.order.domain.member.Member;
 import com.example.order.domain.member.MemberAuthority;
 import com.example.order.domain.product.Product;
+import com.example.order.domain.product.ProductHistory;
+import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.repository.MemberRepository;
+import com.example.order.repository.ProductHistoryRepository;
 import com.example.order.repository.ProductRepository;
 import com.example.order.service.product.response.ProductResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ public class ProductService {
 
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
+    private final ProductHistoryRepository productHistoryRepository;
 
 
     @Transactional
@@ -33,6 +37,9 @@ public class ProductService {
 
         Product product = request.toEntity(nextProductNumber);
         Product savedProduct = productRepository.save(product);
+
+        ProductHistory productHistory = request.toHistoryEntity(savedProduct);
+        productHistoryRepository.save(productHistory);
 
         return ProductResponse.of(savedProduct);
     }
@@ -49,6 +56,9 @@ public class ProductService {
 
         product.changeProduct(changedProduct);
 
+        ProductHistory productHistory = request.toHistoryEntity(product);
+        productHistoryRepository.save(productHistory);
+
         return ProductResponse.of(product);
     }
 
@@ -64,6 +74,9 @@ public class ProductService {
 
         product.changePrice(changedProduct);
 
+        ProductHistory productHistory = request.toHistoryEntity(product);
+        productHistoryRepository.save(productHistory);
+
         return ProductResponse.of(product);
     }
 
@@ -71,10 +84,14 @@ public class ProductService {
     public void deleteProduct(Long productId, String email) {
         checkMemberAuthority(email);
 
-        productRepository.findById(productId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalStateException("해당 상품이 존재하지 않습니다."));
 
         productRepository.deleteById(productId);
+
+        ProductHistory productHistory = toHistoryEntityByDelete(product);
+        productHistoryRepository.save(productHistory);
+
     }
 
 
@@ -99,5 +116,15 @@ public class ProductService {
         if(member.getMemberAuthority()==MemberAuthority.NORMAL){
             throw new ForbiddenException("MART 권한이 아닙니다.");
         }
+    }
+
+    private ProductHistory toHistoryEntityByDelete(Product product){
+        return ProductHistory.builder()
+                .historyType(ProductHistoryType.DELETE)
+                .productNumber(product.getProductNumber())
+                .type(product.getType())
+                .name(product.getName())
+                .price(product.getPrice())
+                .build();
     }
 }

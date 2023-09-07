@@ -1,6 +1,9 @@
 package com.example.order.controller.product.dto;
 
 import com.example.order.domain.product.Product;
+import com.example.order.domain.product.ProductHistory;
+import com.example.order.domain.product.ProductHistoryType;
+import com.example.order.domain.product.ProductType;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +26,16 @@ public class ProductChangePriceRequest {
     public Product toEntity(){
         return Product.builder()
                 .price(price)
+                .build();
+    }
+
+    public ProductHistory toHistoryEntity(Product product){
+        return ProductHistory.builder()
+                .historyType(ProductHistoryType.UPDATE)
+                .productNumber(product.getProductNumber())
+                .type(product.getType())
+                .name(product.getName())
+                .price(product.getPrice())
                 .build();
     }
 }

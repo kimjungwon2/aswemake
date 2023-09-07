@@ -39,9 +39,6 @@ public class Coupon {
     @JoinColumn(name="product_id")
     private Product product;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="order_id")
-    private Order order;
 
     @Builder
     public Coupon(
@@ -49,14 +46,12 @@ public class Coupon {
             CouponType type,
             CouponRange range,
             Integer discountData,
-            Product product,
-            Order order
+            Product product
     ) {
         this.id = id;
         this.type = type;
         this.range = range;
         this.discountData = discountData;
         this.product = product;
-        this.order = order;
     }
 }

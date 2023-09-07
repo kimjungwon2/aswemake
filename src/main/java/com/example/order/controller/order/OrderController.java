@@ -2,7 +2,6 @@ package com.example.order.controller.order;
 
 import com.example.order.controller.order.dto.OrderCreateRequest;
 import com.example.order.service.order.OrderService;
-import com.example.order.service.order.response.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;

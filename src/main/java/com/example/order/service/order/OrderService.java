@@ -59,19 +59,6 @@ public class OrderService {
         return order;
     }
 
-    private Order saveOrder(
-            OrderCreateRequest request,
-            Member member,
-            Delivery delivery,
-            int totalProductPrice
-    ) {
-        Order order = request.toEntity(totalProductPrice);
-        Order.createOrder(order, member, delivery);
-
-        orderRepository.save(order);
-        return order;
-    }
-
 
     private int getTotalOrderProductPrice(OrderCreateRequest request, Order order) {
         int totalProductPrice = 0;

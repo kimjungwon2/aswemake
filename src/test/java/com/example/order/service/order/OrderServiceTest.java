@@ -2,8 +2,10 @@ package com.example.order.service.order;
 
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+import com.example.order.common.exception.ForbiddenException;
 import com.example.order.controller.order.dto.OrderCreateRequest;
 import com.example.order.domain.OrderProduct;
 import com.example.order.domain.delivery.Delivery;
@@ -179,5 +181,59 @@ class OrderServiceTest {
                         tuple( 1200, 1),
                         tuple( 5500, 5)
                 );
+    }
+
+    @DisplayName("상품이 없는 걸 주문하면 IllegalState 예외가 터진다.")
+    @Test
+    void 상품이_없는걸_주문하면_예외발생(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .build();
+
+        //when then
+        assertThatThrownBy(() -> orderService.createOrder(orderCreateRequest))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("해당 상품이 존재하지 않습니다.");
     }
 }

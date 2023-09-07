@@ -54,11 +54,5 @@ public class OrderCreateRequest {
                 .build();
     }
 
-    public Order toEntity(Integer totalPrice){
-        return Order.builder()
-                .totalPrice(totalPrice)
-                .status(OrderStatus.ORDER)
-                .build();
-    }
 
 }

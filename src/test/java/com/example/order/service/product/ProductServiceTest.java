@@ -2,6 +2,7 @@ package com.example.order.service.product;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 import com.example.order.common.exception.ForbiddenException;
 import com.example.order.controller.product.dto.ProductChangePriceRequest;
@@ -10,13 +11,17 @@ import com.example.order.controller.product.dto.ProductUpdateRequest;
 import com.example.order.domain.member.Member;
 import com.example.order.domain.member.MemberAuthority;
 import com.example.order.domain.product.Product;
+import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.domain.product.ProductType;
 import com.example.order.repository.MemberRepository;
+import com.example.order.repository.ProductHistoryRepository;
 import com.example.order.repository.ProductRepository;
+import com.example.order.service.product.response.ProductHistoryResponse;
 import com.example.order.service.product.response.ProductResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.ConstraintViolationException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,10 +40,14 @@ class ProductServiceTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductHistoryRepository productHistoryRepository;
+
     @AfterEach
     void tearDown(){
         memberRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
+        productHistoryRepository.deleteAllInBatch();
     }
 
     @DisplayName("일반 권한 유저가 상품을 등록하면 Forbidden 예외가 터진다.")
@@ -550,6 +559,122 @@ class ProductServiceTest {
         assertThat(foundedProduct2)
                 .extracting("productNumber","name","type","price")
                 .contains("00003", "감자깡", ProductType.SNACK, 1200);
+    }
+
+    @DisplayName("상품을 등록 시, 특정 시점의 상품 기록을 조회.")
+    @Test
+    void 상품등록_시_특정시점_상품기록_조회(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        ProductCreateRequest request1 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("고추장")
+                .productType(ProductType.SEASONING)
+                .price(8500)
+                .build();
+
+        ProductCreateRequest request2 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("새우깡")
+                .productType(ProductType.SNACK)
+                .price(1200)
+                .build();
+
+        ProductCreateRequest request3 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("포스틱")
+                .productType(ProductType.SNACK)
+                .price(1000)
+                .build();
+
+        ProductCreateRequest request4 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("생생우동")
+                .productType(ProductType.SNACK)
+                .price(1000)
+                .build();
+
+        productService.createProduct(request1, LocalDateTime.of(2023,1,17,10,0,20));
+        productService.createProduct(request2, LocalDateTime.of(2023,5,17,10,4,20));
+        productService.createProduct(request3, LocalDateTime.of(2023,5,17,10,4,20));
+        productService.createProduct(request4, LocalDateTime.of(2023,7,17,15,3,34));
+
+        //when
+        List<ProductHistoryResponse> productHistoryResponses = productService.getHistoryBasedOnTime(LocalDateTime.of(2023,5,17,10,4,20));
+
+        //then
+        Assertions.assertThat(productHistoryResponses).hasSize(2)
+                .extracting("productNumber","name", "price", "historyType","type", "createdDate")
+                .containsExactlyInAnyOrder(
+                        tuple("00002","새우깡",1200, ProductHistoryType.CREATE,ProductType.SNACK,LocalDateTime.of(2023,5,17,10,4,20)),
+                        tuple("00003","포스틱",1000,ProductHistoryType.CREATE,ProductType.SNACK,LocalDateTime.of(2023,5,17,10,4,20))
+                );
+    }
+
+    @DisplayName("특정 시점의 상품 기록을 조회.")
+    @Test
+    void 특정시점_상품기록_조회(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        ProductCreateRequest request1 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("고추장")
+                .productType(ProductType.SEASONING)
+                .price(8500)
+                .build();
+
+        ProductCreateRequest request2 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("새우깡")
+                .productType(ProductType.SNACK)
+                .price(1200)
+                .build();
+
+        productService.createProduct(request1, LocalDateTime.of(2023,1,17,10,0,20));
+        productService.createProduct(request2, LocalDateTime.of(2023,5,17,10,4,20));
+
+        ProductChangePriceRequest changedPrice =ProductChangePriceRequest.builder()
+                .email("kjw1313@naver.com")
+                .price(1000)
+                .build();
+
+        Long productId = productRepository.findByProductNumber("00002")
+                .orElseThrow().getId();
+
+        productService.changePrice(productId, changedPrice, LocalDateTime.of(2023,5,17,11,6,20));
+
+        ProductCreateRequest request3 =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("포스틱")
+                .productType(ProductType.SNACK)
+                .price(1000)
+                .build();
+
+        productService.createProduct(request3, LocalDateTime.of(2023,5,17,10,4,20));
+
+        //when
+        List<ProductHistoryResponse> productHistoryResponses = productService.getHistoryBasedOnTime(LocalDateTime.of(2023,5,17,11,6,20));
+
+        //then
+        Assertions.assertThat(productHistoryResponses).hasSize(1)
+                .extracting("productNumber","name", "price", "historyType","type", "createdDate")
+                .containsExactlyInAnyOrder(
+                        tuple("00002","새우깡",1000, ProductHistoryType.UPDATE,ProductType.SNACK,LocalDateTime.of(2023,5,17,11,6,20))
+                );
     }
 
 

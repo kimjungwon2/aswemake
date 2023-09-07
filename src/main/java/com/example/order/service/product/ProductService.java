@@ -62,7 +62,7 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(()-> new IllegalStateException("해당 상품이 존재하지 않습니다."));
 
-        product.changeProduct(changedProduct);
+        product.changePrice(changedProduct);
 
         return ProductResponse.of(product);
     }

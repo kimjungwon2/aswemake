@@ -13,4 +13,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     String findLatestProductNumber();
 
     Optional<Product> findByProductNumber(String productNumber);
+
+    Optional<Product> findByName(String name);
 }

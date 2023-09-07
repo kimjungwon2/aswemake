@@ -1,7 +1,6 @@
 package com.example.order.domain;
 
 import com.example.order.common.domain.BaseEntity;
-import com.example.order.common.domain.BaseTimeEntity;
 import com.example.order.domain.order.Order;
 import com.example.order.domain.product.Product;
 import javax.persistence.Entity;
@@ -12,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +36,22 @@ public class OrderProduct extends BaseEntity {
 
     private Integer count;
 
+    @Builder
+    public OrderProduct(
+            Long id,
+            Product product,
+            Order order,
+            Integer orderPrice,
+            Integer count
+    ) {
+        this.id = id;
+        this.product = product;
+        this.order = order;
+        this.orderPrice = orderPrice;
+        this.count = count;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }

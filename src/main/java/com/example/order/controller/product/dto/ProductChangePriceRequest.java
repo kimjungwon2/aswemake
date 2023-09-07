@@ -4,6 +4,7 @@ import com.example.order.domain.product.Product;
 import com.example.order.domain.product.ProductHistory;
 import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.domain.product.ProductType;
+import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,13 +30,14 @@ public class ProductChangePriceRequest {
                 .build();
     }
 
-    public ProductHistory toHistoryEntity(Product product){
+    public ProductHistory toHistoryEntity(Product product, LocalDateTime createdDate){
         return ProductHistory.builder()
                 .historyType(ProductHistoryType.UPDATE)
                 .productNumber(product.getProductNumber())
                 .type(product.getType())
                 .name(product.getName())
                 .price(product.getPrice())
+                .createdDate(createdDate)
                 .build();
     }
 }

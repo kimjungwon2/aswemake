@@ -1,6 +1,7 @@
 package com.example.order.domain.product;
 
 import com.example.order.common.domain.BaseEntity;
+import java.time.LocalDateTime;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductHistory extends BaseEntity {
+public class ProductHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +34,8 @@ public class ProductHistory extends BaseEntity {
 
     private Integer price;
 
+    private LocalDateTime createdDate;
+
     @Builder
     public ProductHistory(
             Long id,
@@ -40,7 +43,8 @@ public class ProductHistory extends BaseEntity {
             String productNumber,
             String name,
             ProductType type,
-            Integer price
+            Integer price,
+            LocalDateTime createdDate
     ) {
         this.id = id;
         this.historyType = historyType;
@@ -48,5 +52,6 @@ public class ProductHistory extends BaseEntity {
         this.name = name;
         this.type = type;
         this.price = price;
+        this.createdDate = createdDate;
     }
 }

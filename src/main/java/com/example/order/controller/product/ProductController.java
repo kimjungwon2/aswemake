@@ -26,7 +26,9 @@ public class ProductController {
 
     @PostMapping("/product/new")
     public ProductResponse createProduct(@Validated @RequestBody ProductCreateRequest request){
-        return productService.createProduct(request);
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+
+        return productService.createProduct(request, registeredDateTime);
     }
 
     @PutMapping("/product/{productId}/update")
@@ -34,7 +36,9 @@ public class ProductController {
             @PathVariable("productId") Long productId,
             @Validated @RequestBody ProductUpdateRequest request
     ){
-        return productService.changeProduct(productId, request);
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+
+        return productService.changeProduct(productId, request, registeredDateTime);
     }
 
     @PutMapping("/product/{productId}/price/update")
@@ -42,7 +46,9 @@ public class ProductController {
             @PathVariable("productId") Long productId,
             @Validated @RequestBody ProductChangePriceRequest request
     ){
-        return productService.changePrice(productId, request);
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+
+        return productService.changePrice(productId, request, registeredDateTime);
     }
 
     @PutMapping("/product/{productId}/remove")
@@ -50,7 +56,9 @@ public class ProductController {
             @PathVariable("productId") Long productId,
             @RequestParam(value = "email") String email
     ){
-        productService.deleteProduct(productId, email);
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+
+        productService.deleteProduct(productId, email, registeredDateTime);
     }
 
     @GetMapping("/product/history")

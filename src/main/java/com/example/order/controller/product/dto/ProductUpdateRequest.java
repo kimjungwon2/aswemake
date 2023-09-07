@@ -4,6 +4,7 @@ import com.example.order.domain.product.Product;
 import com.example.order.domain.product.ProductHistory;
 import com.example.order.domain.product.ProductHistoryType;
 import com.example.order.domain.product.ProductType;
+import java.time.LocalDateTime;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -45,9 +46,10 @@ public class ProductUpdateRequest {
                 .build();
     }
 
-    public ProductHistory toHistoryEntity(Product product){
+    public ProductHistory toHistoryEntity(Product product, LocalDateTime createdDate){
         return ProductHistory.builder()
                 .historyType(ProductHistoryType.UPDATE)
+                .createdDate(createdDate)
                 .productNumber(product.getProductNumber())
                 .type(product.getType())
                 .name(product.getName())

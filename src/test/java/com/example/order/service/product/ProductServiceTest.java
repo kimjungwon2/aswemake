@@ -14,6 +14,7 @@ import com.example.order.domain.product.ProductType;
 import com.example.order.repository.MemberRepository;
 import com.example.order.repository.ProductRepository;
 import com.example.order.service.product.response.ProductResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.ConstraintViolationException;
 import org.junit.jupiter.api.AfterEach;
@@ -60,7 +61,7 @@ class ProductServiceTest {
                 .build();
 
       //when //then
-        assertThatThrownBy(() -> productService.createProduct(request))
+        assertThatThrownBy(() -> productService.createProduct(request, LocalDateTime.now()))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessage("MART 권한이 아닙니다.");
     }
@@ -85,7 +86,7 @@ class ProductServiceTest {
                 .build();
 
         //when //then
-        assertThatThrownBy(() -> productService.createProduct(request))
+        assertThatThrownBy(() -> productService.createProduct(request, LocalDateTime.now()))
                 .isInstanceOf(ConstraintViolationException.class);
     }
 
@@ -109,7 +110,7 @@ class ProductServiceTest {
                 .build();
 
         //when //then
-        assertThatThrownBy(() -> productService.createProduct(request))
+        assertThatThrownBy(() -> productService.createProduct(request, LocalDateTime.now()))
                 .isInstanceOf(ConstraintViolationException.class);
     }
 
@@ -125,7 +126,7 @@ class ProductServiceTest {
                 .build();
 
       //when //then
-        assertThatThrownBy(() -> productService.createProduct(request))
+        assertThatThrownBy(() -> productService.createProduct(request, LocalDateTime.now()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("해당 멤버가 존재하지 않습니다.");
     }
@@ -161,7 +162,7 @@ class ProductServiceTest {
                 .build();
 
       //when
-        ProductResponse productResponse = productService.createProduct(request);
+        ProductResponse productResponse = productService.createProduct(request, LocalDateTime.now());
 
       //then
         assertThat(productResponse)
@@ -189,7 +190,7 @@ class ProductServiceTest {
                 .build();
 
       //when
-        ProductResponse productResponse = productService.createProduct(request);
+        ProductResponse productResponse = productService.createProduct(request, LocalDateTime.now());
 
       //then
         assertThat(productResponse)
@@ -226,7 +227,7 @@ class ProductServiceTest {
                 .build();
 
       //when //then
-        assertThatThrownBy(() -> productService.changeProduct(1L, request))
+        assertThatThrownBy(() -> productService.changeProduct(1L, request, LocalDateTime.now()))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessage("MART 권한이 아닙니다.");
     }
@@ -267,7 +268,7 @@ class ProductServiceTest {
                 .build();
 
       //when //then
-        assertThatThrownBy(() -> productService.changeProduct(513L, request))
+        assertThatThrownBy(() -> productService.changeProduct(513L, request, LocalDateTime.now()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("해당 상품이 존재하지 않습니다.");
     }
@@ -304,7 +305,7 @@ class ProductServiceTest {
                 .orElseThrow().getId();
 
         //when //then
-        assertThatThrownBy(() -> productService.changeProduct(productId, request))
+        assertThatThrownBy(() -> productService.changeProduct(productId, request, LocalDateTime.now()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("상품의 가격에 음수가 올 수 없습니다.");
     }
@@ -341,7 +342,7 @@ class ProductServiceTest {
                 .orElseThrow().getId();
 
         //when
-        ProductResponse productResponse = productService.changeProduct(productId, request);
+        ProductResponse productResponse = productService.changeProduct(productId, request, LocalDateTime.now());
 
         // then
         assertThat(productResponse)
@@ -379,7 +380,7 @@ class ProductServiceTest {
                 .orElseThrow().getId();
 
       //when //then
-        assertThatThrownBy(() -> productService.changePrice(productId, request))
+        assertThatThrownBy(() -> productService.changePrice(productId, request, LocalDateTime.now()))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessage("MART 권한이 아닙니다.");
     }
@@ -414,7 +415,7 @@ class ProductServiceTest {
                 .orElseThrow().getId();
 
       //when
-        ProductResponse productResponse = productService.changePrice(productId, request);
+        ProductResponse productResponse = productService.changePrice(productId, request, LocalDateTime.now());
 
       //then
         assertThat(productResponse)
@@ -452,7 +453,7 @@ class ProductServiceTest {
                 .orElseThrow().getId();
 
         //when //then
-        assertThatThrownBy(() -> productService.changePrice(productId, request))
+        assertThatThrownBy(() -> productService.changePrice(productId, request, LocalDateTime.now()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("상품의 가격에 음수가 올 수 없습니다.");
     }
@@ -485,7 +486,7 @@ class ProductServiceTest {
                 .orElseThrow().getEmail();
 
       //when //then
-        assertThatThrownBy(() -> productService.deleteProduct(productId, email))
+        assertThatThrownBy(() -> productService.deleteProduct(productId, email, LocalDateTime.now()))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessage("MART 권한이 아닙니다.");
     }
@@ -532,7 +533,7 @@ class ProductServiceTest {
                 .orElseThrow().getEmail();
 
         //when
-        productService.deleteProduct(productId, email);
+        productService.deleteProduct(productId, email, LocalDateTime.now());
 
         Boolean isNullProduct = productRepository.findByProductNumber("00002")
                 .isEmpty();

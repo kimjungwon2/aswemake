@@ -23,6 +23,7 @@ public class ProductHistoryResponse {
 
     private Integer price;
 
+
     @Builder
     public ProductHistoryResponse(
             Long id,

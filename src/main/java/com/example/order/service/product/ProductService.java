@@ -31,7 +31,7 @@ public class ProductService {
 
 
     @Transactional
-    public ProductResponse createProduct(ProductCreateRequest request) {
+    public ProductResponse createProduct(ProductCreateRequest request, LocalDateTime registeredDateTime) {
 
         String email = request.getEmail();
 
@@ -42,14 +42,14 @@ public class ProductService {
         Product product = request.toEntity(nextProductNumber);
         Product savedProduct = productRepository.save(product);
 
-        ProductHistory productHistory = request.toHistoryEntity(savedProduct);
+        ProductHistory productHistory = request.toHistoryEntity(savedProduct, registeredDateTime);
         productHistoryRepository.save(productHistory);
 
         return ProductResponse.of(savedProduct);
     }
 
     @Transactional
-    public ProductResponse changeProduct(Long productId, ProductUpdateRequest request) {
+    public ProductResponse changeProduct(Long productId, ProductUpdateRequest request, LocalDateTime registeredDateTime) {
         String email = request.getEmail();
         checkMemberAuthority(email);
 
@@ -60,14 +60,14 @@ public class ProductService {
 
         product.changeProduct(changedProduct);
 
-        ProductHistory productHistory = request.toHistoryEntity(product);
+        ProductHistory productHistory = request.toHistoryEntity(product, registeredDateTime);
         productHistoryRepository.save(productHistory);
 
         return ProductResponse.of(product);
     }
 
     @Transactional
-    public ProductResponse changePrice(Long productId, ProductChangePriceRequest request) {
+    public ProductResponse changePrice(Long productId, ProductChangePriceRequest request, LocalDateTime registeredDateTime) {
         String email = request.getEmail();
         checkMemberAuthority(email);
 
@@ -78,14 +78,14 @@ public class ProductService {
 
         product.changePrice(changedProduct);
 
-        ProductHistory productHistory = request.toHistoryEntity(product);
+        ProductHistory productHistory = request.toHistoryEntity(product, registeredDateTime);
         productHistoryRepository.save(productHistory);
 
         return ProductResponse.of(product);
     }
 
     @Transactional
-    public void deleteProduct(Long productId, String email) {
+    public void deleteProduct(Long productId, String email, LocalDateTime registeredDateTime) {
         checkMemberAuthority(email);
 
         Product product = productRepository.findById(productId)
@@ -93,7 +93,7 @@ public class ProductService {
 
         productRepository.deleteById(productId);
 
-        ProductHistory productHistory = toHistoryEntityByDelete(product);
+        ProductHistory productHistory = toHistoryEntityByDelete(product, registeredDateTime);
         productHistoryRepository.save(productHistory);
     }
 
@@ -104,7 +104,6 @@ public class ProductService {
                 .map(ProductHistoryResponse::of)
                 .collect(Collectors.toList());
     }
-
 
     private String createNextProductNumber() {
         String latestProductNumber = productRepository.findLatestProductNumber();
@@ -129,13 +128,14 @@ public class ProductService {
         }
     }
 
-    private ProductHistory toHistoryEntityByDelete(Product product){
+    private ProductHistory toHistoryEntityByDelete(Product product, LocalDateTime createdDate){
         return ProductHistory.builder()
                 .historyType(ProductHistoryType.DELETE)
                 .productNumber(product.getProductNumber())
                 .type(product.getType())
                 .name(product.getName())
                 .price(product.getPrice())
+                .createdDate(createdDate)
                 .build();
     }
 }

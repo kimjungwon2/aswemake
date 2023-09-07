@@ -1,5 +1,6 @@
 package com.example.order.domain.coupon;
 
+import com.example.order.domain.order.Order;
 import com.example.order.domain.product.Product;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -38,18 +39,24 @@ public class Coupon {
     @JoinColumn(name="product_id")
     private Product product;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="order_id")
+    private Order order;
+
     @Builder
     public Coupon(
             Long id,
             CouponType type,
             CouponRange range,
             Integer discountData,
-            Product product
+            Product product,
+            Order order
     ) {
         this.id = id;
         this.type = type;
         this.range = range;
         this.discountData = discountData;
         this.product = product;
+        this.order = order;
     }
 }

@@ -71,6 +71,9 @@ public class OrderService {
                        .orElseThrow(() -> new IllegalStateException("해당 상품이 존재하지 않습니다."));
 
             int count = products.get(productName);
+
+            isCountPositive(count);
+
             int orderPrice = count * product.getPrice();
 
             saveOrderProduct(product, count, orderPrice, order);
@@ -79,6 +82,12 @@ public class OrderService {
         }
 
         return totalProductPrice;
+    }
+
+    private void isCountPositive(int count) {
+        if(count <=0){
+            throw new IllegalStateException("상품의 숫자는 양수여만 합니다.");
+        }
     }
 
     private OrderProduct saveOrderProduct(Product product, int count, int orderPrice, Order order) {

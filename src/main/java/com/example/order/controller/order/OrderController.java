@@ -18,7 +18,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/order/create")
-    public Long createOrder(@Validated @RequestBody OrderCreateRequest request){
+    public Integer createOrder(@Validated @RequestBody OrderCreateRequest request){
         return orderService.createOrder(request);
     }
 

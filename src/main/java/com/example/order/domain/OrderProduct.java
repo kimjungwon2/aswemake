@@ -3,6 +3,7 @@ package com.example.order.domain;
 import com.example.order.common.domain.BaseEntity;
 import com.example.order.domain.order.Order;
 import com.example.order.domain.product.Product;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -28,7 +29,7 @@ public class OrderProduct extends BaseEntity {
     @JoinColumn(name="product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name="order_id")
     private Order order;
 

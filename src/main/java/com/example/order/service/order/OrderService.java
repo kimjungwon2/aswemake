@@ -35,36 +35,48 @@ public class OrderService {
     private static final Integer DELIVERY_PRICE = 2500;
 
     @Transactional
-    public Long createOrder(OrderCreateRequest request) {
+    public Integer createOrder(OrderCreateRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
                 .orElseThrow(()->new IllegalStateException("해당 이메일의 멤버가 존재하지 않습니다."));
 
         Delivery delivery = saveDelivery(request);
 
-        List<OrderProduct> orderProducts = new ArrayList<>();
-        int totalProductPrice = getTotalOrderProductPrice(request, orderProducts);
+        Order order = saveOrder(request, member, delivery);
 
-        Order order = saveOrder(request, member, delivery, orderProducts, totalProductPrice);
+        int totalProductPrice = getTotalOrderProductPrice(request, order);
 
-        return order.getId();
+        order.setTotalPrice(totalProductPrice);
+
+        return totalProductPrice + delivery.getDeliveryPrice();
+    }
+
+    private Order saveOrder(
+            OrderCreateRequest request,
+            Member member,
+            Delivery delivery
+    ) {
+        Order order = request.toEntity();
+        Order.createOrder(order, member, delivery);
+
+        orderRepository.save(order);
+        return order;
     }
 
     private Order saveOrder(
             OrderCreateRequest request,
             Member member,
             Delivery delivery,
-            List<OrderProduct> orderProducts,
             int totalProductPrice
     ) {
         Order order = request.toEntity(totalProductPrice);
-        Order.createOrder(order, member, delivery, orderProducts);
+        Order.createOrder(order, member, delivery);
 
         orderRepository.save(order);
         return order;
     }
 
 
-    private int getTotalOrderProductPrice(OrderCreateRequest request, List<OrderProduct> orderProducts) {
+    private int getTotalOrderProductPrice(OrderCreateRequest request, Order order) {
         int totalProductPrice = 0;
 
         HashMap<String, Integer> products = request.getProducts();
@@ -77,7 +89,7 @@ public class OrderService {
             int count = products.get(productName);
             int orderPrice = count * product.getPrice();
 
-            orderProducts.add(saveOrderProduct(product, count, orderPrice));
+            saveOrderProduct(product, count, orderPrice, order);
 
             totalProductPrice += orderPrice;
         }
@@ -85,18 +97,15 @@ public class OrderService {
         return totalProductPrice;
     }
 
-    private OrderProduct saveOrderProduct(Product product, int count, int orderPrice) {
+    private OrderProduct saveOrderProduct(Product product, int count, int orderPrice, Order order) {
         OrderProduct orderProduct = OrderProduct.builder()
                 .product(product)
                 .count(count)
+                .order(order)
                 .orderPrice(orderPrice)
                 .build();
 
-        OrderProduct savedOrderProduct= orderProductRepository.save(orderProduct);
-        OrderProduct foundedOrderProduct = orderProductRepository.findById(1L)
-                .orElseThrow(()->new IllegalStateException("orderProduct 데이터가 없습니다."));
-
-        return savedOrderProduct;
+        return orderProductRepository.save(orderProduct);
     }
 
     private Delivery saveDelivery(OrderCreateRequest request) {

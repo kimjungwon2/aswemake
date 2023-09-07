@@ -39,7 +39,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
+    @OneToMany(mappedBy = "order")
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
@@ -68,6 +68,10 @@ public class Order extends BaseEntity {
         this.status = status;
     }
 
+    public void setTotalPrice(Integer totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     //==연관관계 메서드==//
     public void setMember(Member member){
         this.member = member;
@@ -79,23 +83,13 @@ public class Order extends BaseEntity {
         delivery.setOrder(this);
     }
 
-    public void addOrderProduct(OrderProduct orderProduct){
-        orderProducts.add(orderProduct);
-        orderProduct.setOrder(this);
-    }
-
     public static Order createOrder(
             Order order,
             Member member,
-            Delivery delivery,
-            List<OrderProduct> orderProducts
+            Delivery delivery
     ){
         order.setMember(member);
         order.setDelivery(delivery);
-
-        for(OrderProduct orderProduct : orderProducts){
-            order.addOrderProduct(orderProduct);
-        }
 
         return order;
     }

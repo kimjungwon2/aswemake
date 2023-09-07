@@ -33,7 +33,7 @@ public class Member extends BaseTimeEntity {
     private List<Order> orders = new ArrayList<>();
 
     @Column(unique = true, nullable = false)
-    @Email
+    @Email(message = "이메일 형태가 아닙니다.")
     private String email;
 
     private String password;

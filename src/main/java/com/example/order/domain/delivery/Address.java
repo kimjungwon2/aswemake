@@ -1,6 +1,7 @@
 package com.example.order.domain.delivery;
 
 import javax.persistence.Embeddable;
+import lombok.Builder;
 import lombok.Getter;
 
 @Embeddable
@@ -10,6 +11,7 @@ public class Address {
     private String detailedAddress;
     private String zipcode;
 
+    @Builder
     public Address(
             String city,
             String detailedAddress,

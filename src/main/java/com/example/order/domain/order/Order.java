@@ -21,6 +21,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -43,6 +44,7 @@ public class Order extends BaseEntity {
     private List<OrderProduct> orderProduct = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
+    @JoinColumn(name="delivery_id")
     private Delivery delivery;
 
     @NotNull
@@ -51,4 +53,36 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Builder
+    public Order(
+            Long id,
+            Member member,
+            List<OrderProduct> orderProduct,
+            Delivery delivery,
+            Integer totalPrice,
+            OrderStatus status
+    ) {
+        this.id = id;
+        this.member = member;
+        this.orderProduct = orderProduct;
+        this.delivery = delivery;
+        this.totalPrice = totalPrice;
+        this.status = status;
+    }
+
+    //==연관관계 메서드==//
+    public void setMember(Member member){
+        this.member = member;
+        member.getOrders().add(this);
+    }
+
+    public void setDelivery(Delivery delivery){
+        this.delivery = delivery;
+        delivery.setOrder(this);
+    }
+
+    public void addOrderProduct(OrderProduct orderProduct){
+        this.orderProduct.add(orderProduct);
+        orderProduct.setOrder(this);
+    }
 }

@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,4 +36,20 @@ public class Delivery extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
 
+    @Builder
+    public Delivery(Long id,
+            Address address,
+            Integer deliveryPrice,
+            DeliveryStatus status
+    ) {
+        this.id = id;
+        this.order = order;
+        this.address = address;
+        this.deliveryPrice = deliveryPrice;
+        this.status = status;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }

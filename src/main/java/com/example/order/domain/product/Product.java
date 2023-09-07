@@ -8,6 +8,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductType type;
 
+    @Positive
     private Integer price;
 
     @Builder
@@ -39,6 +41,7 @@ public class Product extends BaseEntity {
             ProductType type,
             Integer price
     ) {
+
         this.id = id;
         this.productNumber = productNumber;
         this.name = name;
@@ -47,12 +50,22 @@ public class Product extends BaseEntity {
     }
 
     public void changeProduct(Product product){
+        isPriceNegative(product);
         this.name = product.getName();
         this.type = product.getType();
         this.price = product.getPrice();
     }
 
+
+
     public void changePrice(Product product) {
+        isPriceNegative(product);
         this.price = product.getPrice();
+    }
+
+    private void isPriceNegative(Product product) {
+        if(product.getPrice() < 0){
+            throw new IllegalStateException("가격에 음수가 올 수 없습니다.");
+        }
     }
 }

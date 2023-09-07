@@ -30,7 +30,7 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductType type;
 
-    @Positive
+    @Positive(message="상품 가격은 음수가 올 수 없습니다.")
     private Integer price;
 
     @Builder
@@ -65,7 +65,7 @@ public class Product extends BaseEntity {
 
     private void isPriceNegative(Product product) {
         if(product.getPrice() < 0){
-            throw new IllegalStateException("가격에 음수가 올 수 없습니다.");
+            throw new IllegalStateException("상품의 가격에 음수가 올 수 없습니다.");
         }
     }
 }

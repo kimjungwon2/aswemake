@@ -15,6 +15,7 @@ import com.example.order.repository.MemberRepository;
 import com.example.order.repository.ProductRepository;
 import com.example.order.service.product.response.ProductResponse;
 import java.util.List;
+import javax.validation.ConstraintViolationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,54 @@ class ProductServiceTest {
         assertThatThrownBy(() -> productService.createProduct(request))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessage("MART 권한이 아닙니다.");
+    }
+
+    @DisplayName("상품 가격을 음수로 등록하면 ConstraintViolation 예외가 터진다.")
+    @Test
+    void 음수_가격으로_상품등록(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        ProductCreateRequest request =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("고추장")
+                .productType(ProductType.SEASONING)
+                .price(-8500)
+                .build();
+
+        //when //then
+        assertThatThrownBy(() -> productService.createProduct(request))
+                .isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @DisplayName("상품 가격을 0으로 등록하면 ConstraintViolation 예외가 터진다.")
+    @Test
+    void 빵원_가격으로_상품등록(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        ProductCreateRequest request =ProductCreateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("고추장")
+                .productType(ProductType.SEASONING)
+                .price(0)
+                .build();
+
+        //when //then
+        assertThatThrownBy(() -> productService.createProduct(request))
+                .isInstanceOf(ConstraintViolationException.class);
     }
 
     @DisplayName("등록되지 않은 멤버가 상품을 등록하면 IllegalStateException 예외가 터진다.")
@@ -223,6 +272,43 @@ class ProductServiceTest {
                 .hasMessage("해당 상품이 존재하지 않습니다.");
     }
 
+    @DisplayName("전체 상품을 수정할 때, 가격을 음수로 수정하면 IllegalState 예외가 터진다.")
+    @Test
+    void 상품의_가격을_음수로_수정(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(1000)
+                .type(ProductType.NOODLE)
+                .build();
+
+        productRepository.save(product);
+
+        ProductUpdateRequest request =ProductUpdateRequest.builder()
+                .email("kjw1313@naver.com")
+                .productName("고추장")
+                .productType(ProductType.SEASONING)
+                .price(-3500)
+                .build();
+
+        Long productId = productRepository.findByProductNumber(product.getProductNumber())
+                .orElseThrow().getId();
+
+        //when //then
+        assertThatThrownBy(() -> productService.changeProduct(productId, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("상품의 가격에 음수가 올 수 없습니다.");
+    }
+
     @DisplayName("상품을 수정한다.")
     @Test
     void 상품을_수정(){
@@ -248,7 +334,7 @@ class ProductServiceTest {
                 .email("kjw1313@naver.com")
                 .productName("고추장")
                 .productType(ProductType.SEASONING)
-                .price(8500)
+                .price(1)
                 .build();
 
         Long productId = productRepository.findByProductNumber(product.getProductNumber())
@@ -260,7 +346,7 @@ class ProductServiceTest {
         // then
         assertThat(productResponse)
                 .extracting("productNumber","name","type","price")
-                .contains("00001","고추장",ProductType.SEASONING, 8500);
+                .contains("00001","고추장",ProductType.SEASONING, 1);
     }
 
     @DisplayName("일반 권한 유저가 상품 가격을 수정하면 Forbidden 예외가 터진다.")
@@ -321,7 +407,7 @@ class ProductServiceTest {
 
         ProductChangePriceRequest request =ProductChangePriceRequest.builder()
                 .email("kjw1313@naver.com")
-                .price(1000)
+                .price(1)
                 .build();
 
         Long productId = productRepository.findByProductNumber(product.getProductNumber())
@@ -333,7 +419,42 @@ class ProductServiceTest {
       //then
         assertThat(productResponse)
                 .extracting("productNumber","name","type","price")
-                .contains("00001", "신라면", ProductType.NOODLE, 1000);
+                .contains("00001", "신라면", ProductType.NOODLE, 1);
+    }
+
+    @DisplayName("상품 가격을 음수로 수정한다.")
+    @Test
+    void 상품가격_음수로_수정(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.MART)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        productRepository.save(product);
+
+        ProductChangePriceRequest request =ProductChangePriceRequest.builder()
+                .email("kjw1313@naver.com")
+                .price(-1000)
+                .build();
+
+        Long productId = productRepository.findByProductNumber(product.getProductNumber())
+                .orElseThrow().getId();
+
+        //when //then
+        assertThatThrownBy(() -> productService.changePrice(productId, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("상품의 가격에 음수가 올 수 없습니다.");
     }
 
     @DisplayName("일반 유저가 상품을 삭제하면 Forbidden 예외가 터진다.")
@@ -369,7 +490,7 @@ class ProductServiceTest {
                 .hasMessage("MART 권한이 아닙니다.");
     }
 
-    @DisplayName("상품을 삭제한다.")
+    @DisplayName("특정 상품을 삭제한다.")
     @Test
     void 상품삭제(){
         //given

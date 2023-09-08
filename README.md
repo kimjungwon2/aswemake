@@ -22,3 +22,9 @@ H2 콘솔을 열고, JDBC URL을 jdbc:h2:tcp://localhost/~/order로 설정합니
 
 ## 3. ERD
 ![image](https://github.com/kimjungwon2/aswemake/assets/40010165/9523e5dd-ec2d-46fa-85cc-5f665a68d639)
+
+## 4. 쿠폰 할인적용
+![image](https://github.com/kimjungwon2/aswemake/assets/40010165/99163597-aff8-44de-9572-8df4f3ac2932)
+
+</br>
+전략 패턴을 사용했습니다. DiscountService는 Map으로 모든 DiscountPolicy를 주입받았습니다.

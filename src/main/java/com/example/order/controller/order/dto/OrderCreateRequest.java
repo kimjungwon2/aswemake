@@ -1,5 +1,7 @@
 package com.example.order.controller.order.dto;
 
+import com.example.order.domain.coupon.CouponRange;
+import com.example.order.domain.coupon.CouponType;
 import com.example.order.domain.delivery.Delivery;
 import com.example.order.domain.member.Member;
 import com.example.order.domain.order.Order;
@@ -33,19 +35,38 @@ public class OrderCreateRequest {
     @NotEmpty(message = "상품을 넣어주세요.")
     private HashMap<String, Integer> products;
 
+    @NotNull(message = "쿠폰 적용 여부를 선택해주세요.")
+    private Boolean isCoupon;
+
+    private CouponType couponType;
+    private CouponRange couponRange;
+    private Integer discountData;
+
+
     @Builder
     public OrderCreateRequest(
             String email,
             String city,
             String detailedAddress,
             String zipcode,
-            HashMap<String, Integer> products
+            HashMap<String, Integer> products,
+            Boolean isCoupon,
+            CouponType couponType,
+            CouponRange couponRange,
+            Integer discountData
     ) {
         this.email = email;
         this.city = city;
         this.detailedAddress = detailedAddress;
         this.zipcode = zipcode;
         this.products = products;
+        this.isCoupon = isCoupon;
+
+        if(isCoupon == true){
+            this.couponType = couponType;
+            this.couponRange = couponRange;
+            this.discountData = discountData;
+        }
     }
 
     public Order toEntity(){
@@ -53,6 +74,4 @@ public class OrderCreateRequest {
                 .status(OrderStatus.ORDER)
                 .build();
     }
-
-
 }

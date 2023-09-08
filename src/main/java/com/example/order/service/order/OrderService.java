@@ -2,6 +2,8 @@ package com.example.order.service.order;
 
 import com.example.order.controller.order.dto.OrderCreateRequest;
 import com.example.order.domain.OrderProduct;
+import com.example.order.domain.coupon.Coupon;
+import com.example.order.domain.coupon.CouponRange;
 import com.example.order.domain.delivery.Address;
 import com.example.order.domain.delivery.Delivery;
 import com.example.order.domain.delivery.DeliveryStatus;
@@ -13,6 +15,7 @@ import com.example.order.repository.MemberRepository;
 import com.example.order.repository.OrderProductRepository;
 import com.example.order.repository.OrderRepository;
 import com.example.order.repository.ProductRepository;
+import com.example.order.service.discount.DiscountService;
 import java.util.HashMap;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderProductRepository orderProductRepository;
 
+    private final DiscountService discountService;
+
     private static final Integer DELIVERY_PRICE = 2500;
 
     @Transactional
@@ -42,9 +47,31 @@ public class OrderService {
 
         int totalProductPrice = getTotalOrderProductPrice(request, order);
 
-        order.setTotalPrice(totalProductPrice);
+        if(request.getIsCoupon()==false || request.getCouponRange() == CouponRange.PRODUCT) {
+            order.setTotalPrice(totalProductPrice);
 
-        return totalProductPrice + delivery.getDeliveryPrice();
+            return totalProductPrice + delivery.getDeliveryPrice();
+        }
+
+        return applyOrderCoupon(request, delivery, order, totalProductPrice);
+    }
+
+    private int applyOrderCoupon(
+            OrderCreateRequest request,
+            Delivery delivery,
+            Order order,
+            int totalProductPrice
+    ) {
+        Coupon coupon = Coupon.builder()
+                .range(request.getCouponRange())
+                .type(request.getCouponType())
+                .discountData(request.getDiscountData())
+                .build();
+
+        int totalPrice = totalProductPrice - discountService.discount(coupon, totalProductPrice);
+        order.setTotalPrice(totalPrice);
+
+        return totalPrice + delivery.getDeliveryPrice();
     }
 
     private Order saveOrder(
@@ -76,9 +103,20 @@ public class OrderService {
 
             int orderPrice = count * product.getPrice();
 
-            saveOrderProduct(product, count, orderPrice, order);
+            if(request.getIsCoupon() == true && request.getCouponRange() == CouponRange.PRODUCT){
+                Coupon coupon = Coupon.builder()
+                        .range(request.getCouponRange())
+                        .type(request.getCouponType())
+                        .discountData(request.getDiscountData())
+                        .build();
 
-            totalProductPrice += orderPrice;
+                orderPrice-= discountService.discount(coupon, orderPrice);
+                saveOrderProduct(product, count, orderPrice, order);
+                totalProductPrice += orderPrice;
+            } else{
+                saveOrderProduct(product, count, orderPrice, order);
+                totalProductPrice += orderPrice;
+            }
         }
 
         return totalProductPrice;

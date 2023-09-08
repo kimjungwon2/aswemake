@@ -41,6 +41,7 @@ public class OrderCreateRequest {
     private CouponType couponType;
     private CouponRange couponRange;
     private Integer discountData;
+    private String couponProductName;
 
 
     @Builder
@@ -53,7 +54,8 @@ public class OrderCreateRequest {
             Boolean isCoupon,
             CouponType couponType,
             CouponRange couponRange,
-            Integer discountData
+            Integer discountData,
+            String couponProductName
     ) {
         this.email = email;
         this.city = city;
@@ -66,6 +68,7 @@ public class OrderCreateRequest {
             this.couponType = couponType;
             this.couponRange = couponRange;
             this.discountData = discountData;
+            this.couponProductName = couponProductName;
         }
     }
 

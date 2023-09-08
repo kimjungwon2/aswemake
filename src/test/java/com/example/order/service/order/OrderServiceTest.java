@@ -133,7 +133,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -214,7 +214,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -269,7 +269,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -332,7 +332,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -395,7 +395,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -441,7 +441,7 @@ class OrderServiceTest {
                 .memberAuthority(MemberAuthority.NORMAL)
                 .build();
 
-        Member savedMember = memberRepository.save(member);
+        memberRepository.save(member);
 
         Product product1 = Product.builder()
                 .productNumber("00001")
@@ -458,7 +458,7 @@ class OrderServiceTest {
                 .build();
 
         Product product3 = Product.builder()
-                .productNumber("00002")
+                .productNumber("00003")
                 .name("포스틱")
                 .price(1100)
                 .type(ProductType.SNACK)
@@ -488,6 +488,257 @@ class OrderServiceTest {
                 .hasMessage("쿠폰의 데이터가 존재하지 않습니다.");
     }
 
+
+    @DisplayName("주문 시에 특정 상품 쿠폰의 신라면 고정 300원 할인을 적용한다.")
+    @Test
+    void 주문_시_상품쿠폰_고정할인_적용(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00003")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.PRODUCT)
+                .couponType(CouponType.FIX)
+                .discountData(300)
+                .couponProductName("신라면")
+                .build();
+
+        //when
+        Integer totalPrice = orderService.createOrder(orderCreateRequest);
+
+        //then
+        Order order = orderRepository.findByMember(savedMember).orElseThrow();
+
+        assertThat(order.getTotalPrice()).isEqualTo(7900);
+        assertThat(totalPrice).isEqualTo(10400);
+    }
+
+    @DisplayName("주문 시에 특정 상품 쿠폰의 포스틱 비율 10% 할인을 적용한다.")
+    @Test
+    void 주문_시_상품쿠폰_비율할인_적용(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00003")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.PRODUCT)
+                .couponType(CouponType.RATE)
+                .discountData(10)
+                .couponProductName("포스틱")
+                .build();
+
+        //when
+        Integer totalPrice = orderService.createOrder(orderCreateRequest);
+
+        //then
+        Order order = orderRepository.findByMember(savedMember).orElseThrow();
+
+        // 2100 + 1200 + 4950
+        assertThat(order.getTotalPrice()).isEqualTo(8250);
+        assertThat(totalPrice).isEqualTo(10750);
+    }
+
+
+    @DisplayName("주문 시에 상품 쿠폰의 데이터가 없으면 IllegalState 예외가 터진다.")
+    @Test
+    void 주문_시_상품쿠폰_데이터_없다(){
+        //given
+
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00003")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.PRODUCT)
+                .couponType(CouponType.FIX)
+                .discountData(1000)
+                .build();
+
+        //when //then
+        assertThatThrownBy(() -> orderService.createOrder(orderCreateRequest))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("쿠폰의 데이터가 존재하지 않습니다.");
+    }
+
+    @DisplayName("주문 시에 특정 상품 쿠폰의 할인이 매우 크면 0으로 고정된다.")
+    @Test
+    void 주문_시_상품쿠폰_할인율이_크다(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00003")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.PRODUCT)
+                .couponType(CouponType.FIX)
+                .discountData(10000)
+                .couponProductName("신라면")
+                .build();
+
+        //when
+        Integer totalPrice = orderService.createOrder(orderCreateRequest);
+
+        //then
+        Order order = orderRepository.findByMember(savedMember).orElseThrow();
+
+
+        assertThat(totalPrice).isEqualTo(9200);
+        assertThat(order.getTotalPrice()).isEqualTo(6700);
+    }
 
 
 }

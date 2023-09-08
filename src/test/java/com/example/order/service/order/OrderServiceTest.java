@@ -94,6 +94,7 @@ class OrderServiceTest {
                 .detailedAddress("덕릉로 59바길 13")
                 .zipcode("01468")
                 .products(products)
+                .isCoupon(false)
                 .build();
 
       //when
@@ -149,6 +150,7 @@ class OrderServiceTest {
                 .detailedAddress("덕릉로 59바길 13")
                 .zipcode("01468")
                 .products(products)
+                .isCoupon(false)
                 .build();
 
       //when
@@ -229,6 +231,7 @@ class OrderServiceTest {
                 .detailedAddress("덕릉로 59바길 13")
                 .zipcode("01468")
                 .products(products)
+                .isCoupon(false)
                 .build();
 
         //when then

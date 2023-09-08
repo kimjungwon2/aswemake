@@ -62,6 +62,8 @@ public class OrderService {
             Order order,
             int totalProductPrice
     ) {
+        checkCouponData(request);
+
         Coupon coupon = Coupon.builder()
                 .range(request.getCouponRange())
                 .type(request.getCouponType())
@@ -69,9 +71,25 @@ public class OrderService {
                 .build();
 
         int totalPrice = totalProductPrice - discountService.discount(coupon, totalProductPrice);
+
+        totalPrice = validateTotalPrice(totalPrice);
+
         order.setTotalPrice(totalPrice);
 
         return totalPrice + delivery.getDeliveryPrice();
+    }
+
+    private int validateTotalPrice(int totalPrice) {
+        if(totalPrice <0){
+            totalPrice = 0;
+        }
+        return totalPrice;
+    }
+
+    private void checkCouponData(OrderCreateRequest request) {
+        if(request.getDiscountData() == null || request.getCouponRange() == null || request.getCouponType() == null){
+            throw new IllegalStateException("쿠폰의 데이터가 존재하지 않습니다.");
+        }
     }
 
     private Order saveOrder(

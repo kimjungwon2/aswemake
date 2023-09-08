@@ -8,6 +8,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import com.example.order.common.exception.ForbiddenException;
 import com.example.order.controller.order.dto.OrderCreateRequest;
 import com.example.order.domain.OrderProduct;
+import com.example.order.domain.coupon.CouponRange;
+import com.example.order.domain.coupon.CouponType;
 import com.example.order.domain.delivery.Delivery;
 import com.example.order.domain.member.Member;
 import com.example.order.domain.member.MemberAuthority;
@@ -239,4 +241,253 @@ class OrderServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("해당 상품이 존재하지 않습니다.");
     }
+
+    @DisplayName("주문 시에 고정된 1000원짜리 주몬 쿠폰을 적용한다.")
+    @Test
+    void 주문_시_고정_주문쿠폰_적용(){
+      //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.ORDER)
+                .couponType(CouponType.FIX)
+                .discountData(1000)
+                .build();
+
+      //when
+        Integer totalPrice= orderService.createOrder(orderCreateRequest);
+
+      //then
+        Order order = orderRepository.findByMember(savedMember)
+                .orElseThrow();
+
+        assertThat(totalPrice).isEqualTo(10300);
+        assertThat(order.getTotalPrice()).isEqualTo(7800);
+    }
+
+    @DisplayName("주문 시에 10% 비율의 주몬 쿠폰을 적용한다.")
+    @Test
+    void 주문_시_비율_주문쿠폰_적용(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.ORDER)
+                .couponType(CouponType.RATE)
+                .discountData(10)
+                .build();
+
+        //when
+        Integer totalPrice= orderService.createOrder(orderCreateRequest);
+
+        //then
+        Order order = orderRepository.findByMember(savedMember)
+                .orElseThrow();
+
+        assertThat(totalPrice).isEqualTo(10420);
+        assertThat(order.getTotalPrice()).isEqualTo(7920);
+    }
+
+    @DisplayName("주문 시에 아주 큰 할인을 하는 주몬 쿠폰을 적용해도 배달비만 받는다.")
+    @Test
+    void 주문_시_큰_할인_쿠폰_배달비만_나온다(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.ORDER)
+                .couponType(CouponType.FIX)
+                .discountData(100000)
+                .build();
+
+        //when
+        Integer totalPrice= orderService.createOrder(orderCreateRequest);
+
+        //then
+        Order order = orderRepository.findByMember(savedMember)
+                .orElseThrow();
+
+        assertThat(totalPrice).isEqualTo(2500);
+        assertThat(order.getTotalPrice()).isEqualTo(0);
+    }
+
+    @DisplayName("주문 시에 주몬 쿠폰을 적용하는데 쿠폰 데이터가 없으면 IllegalStae 예외가 터진다.")
+    @Test
+    void 주문_시_쿠폰_데이터가_없이_적용(){
+        //given
+        Member member = Member.builder()
+                .email("kjw1313@naver.com")
+                .name("김정원")
+                .memberAuthority(MemberAuthority.NORMAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
+        Product product1 = Product.builder()
+                .productNumber("00001")
+                .name("신라면")
+                .price(700)
+                .type(ProductType.NOODLE)
+                .build();
+
+        Product product2 = Product.builder()
+                .productNumber("00002")
+                .name("새우깡")
+                .price(1200)
+                .type(ProductType.SNACK)
+                .build();
+
+        Product product3 = Product.builder()
+                .productNumber("00002")
+                .name("포스틱")
+                .price(1100)
+                .type(ProductType.SNACK)
+                .build();
+
+        productRepository.saveAll(List.of(product1,product2,product3));
+
+        HashMap<String, Integer> products = new HashMap<>();
+        products.put("신라면",3);
+        products.put("새우깡",1);
+        products.put("포스틱",5);
+
+        OrderCreateRequest orderCreateRequest = OrderCreateRequest.builder()
+                .email(member.getEmail())
+                .city("서울시")
+                .detailedAddress("덕릉로 59바길 13")
+                .zipcode("01468")
+                .products(products)
+                .isCoupon(true)
+                .couponRange(CouponRange.ORDER)
+                .discountData(10)
+                .build();
+
+        //when //then
+        assertThatThrownBy(() -> orderService.createOrder(orderCreateRequest))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("쿠폰의 데이터가 존재하지 않습니다.");
+    }
+
+
+
 }
